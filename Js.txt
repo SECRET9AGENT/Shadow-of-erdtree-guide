@@ -1,0 +1,192 @@
+// script.js
+document.addEventListener('DOMContentLoaded', function() {
+    // بيانات الخريطة (يمكن استبدالها ببيانات حقيقية من API)
+    const mapData = {
+        regions: [
+            { id: 1, name: "غابة الشفق", x: 25, y: 30 },
+            { id: 2, name: "سهول الخراب", x: 50, y: 45 },
+            { id: 3, name: "قلعة مورن", x: 70, y: 25 },
+            { id: 4, name: "أطلال الغرقى", x: 40, y: 70 },
+            { id: 5, name: "برج العزلة", x: 15, y: 60 }
+        ],
+        bosses: [
+            { id: 1, name: "حارس الشفق", regionId: 1, x: 20, y: 35 },
+            { id: 2, name: "فارس الخراب", regionId: 2, x: 55, y: 40 },
+            { id: 3, name: "ملك الظلال", regionId: 3, x: 75, y: 20 }
+        ],
+        items: [
+            { id: 1, name: "سيف الشفق", regionId: 1, x: 30, y: 25, type: "weapon" },
+            { id: 2, name: "درع الخراب", regionId: 2, x: 45, y: 50, type: "armor" },
+            { id: 3, name: "خاتم الظلال", regionId: 3, x: 65, y: 30, type: "ring" }
+        ],
+        npcs: [
+            { id: 1, name: "المعلم القديم", regionId: 1, x: 25, y: 20 },
+            { id: 2, name: "تاجر الخراب", regionId: 2, x: 60, y: 50 },
+            { id: 3, name: "سجين القلعة", regionId: 3, x: 80, y: 25 }
+        ],
+        paths: [
+            { from: 1, to: 2, difficulty: "medium" },
+            { from: 2, to: 3, difficulty: "hard" },
+            { from: 1, to: 4, difficulty: "easy" },
+            { from: 4, to: 5, difficulty: "medium" }
+        ]
+    };
+
+    // عرض العلامات على الخريطة
+    function showMarkers(type) {
+        const markersContainer = document.getElementById('markers');
+        markersContainer.innerHTML = '';
+        
+        const itemsToShow = mapData[type] || [];
+        
+        itemsToShow.forEach(item => {
+            const marker = document.createElement('div');
+            marker.className = `marker ${type}`;
+            marker.style.left = `${item.x}%`;
+            marker.style.top = `${item.y}%`;
+            marker.title = item.name;
+            
+            // إضافة حدث النقر لعرض المعلومات
+            marker.addEventListener('click', () => {
+                showItemInfo(item, type);
+            });
+            
+            markersContainer.appendChild(marker);
+        });
+    }
+
+    // عرض معلومات العنصر
+    function showItemInfo(item, type) {
+        alert(`اسم: ${item.name}\nالمنطقة: ${getRegionName(item.regionId)}\nالنوع: ${type}`);
+    }
+
+    // الحصول على اسم المنطقة
+    function getRegionName(regionId) {
+        const region = mapData.regions.find(r => r.id === regionId);
+        return region ? region.name : 'غير معروف';
+    }
+
+    // إعداد أدوات التحكم بالخريطة
+    document.getElementById('show-bosses').addEventListener('click', () => showMarkers('bosses'));
+    document.getElementById('show-items').addEventListener('click', () => showMarkers('items'));
+    document.getElementById('show-npcs').addEventListener('click', () => showMarkers('npcs'));
+    document.getElementById('show-all').addEventListener('click', () => {
+        showMarkers('bosses');
+        showMarkers('items');
+        showMarkers('npcs');
+    });
+    document.getElementById('hide-all').addEventListener('click', () => {
+        document.getElementById('markers').innerHTML = '';
+    });
+
+    // ملء قوائم اختيار المسار
+    const startPointSelect = document.getElementById('start-point');
+    const endPointSelect = document.getElementById('end-point');
+    
+    mapData.regions.forEach(region => {
+        const option1 = document.createElement('option');
+        option1.value = region.id;
+        option1.textContent = region.name;
+        startPointSelect.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = region.id;
+        option2.textContent = region.name;
+        endPointSelect.appendChild(option2);
+    });
+
+    // إيجاد المسار
+    document.getElementById('find-path').addEventListener('click', findPath);
+    
+    function findPath() {
+        const startId = parseInt(startPointSelect.value);
+        const endId = parseInt(endPointSelect.value);
+        
+        if (!startId || !endId) {
+            alert('الرجاء اختيار نقطتي البداية والنهاية');
+            return;
+        }
+        
+        if (startId === endId) {
+            document.getElementById('path-result').innerHTML = '<p>أنت بالفعل في المنطقة المطلوبة!</p>';
+            return;
+        }
+        
+        const path = findShortestPath(startId, endId);
+        
+        if (path.length > 0) {
+            let pathText = '<p>مسارك الأمثل:<br>';
+            path.forEach((step, index) => {
+                const region = mapData.regions.find(r => r.id === step);
+                pathText += `${index + 1}. ${region.name}<br>`;
+            });
+            pathText += '</p>';
+            document.getElementById('path-result').innerHTML = pathText;
+        } else {
+            document.getElementById('path-result').innerHTML = '<p>لا يوجد مسار مباشر بين المنطقتين المحددتين</p>';
+        }
+    }
+
+    // خوارزمية لإيجاد أقصر مسار (BFS بسيطة)
+    function findShortestPath(startId, endId) {
+        const queue = [[startId]];
+        const visited = new Set();
+        
+        while (queue.length > 0) {
+            const path = queue.shift();
+            const node = path[path.length - 1];
+            
+            if (node === endId) return path;
+            
+            if (!visited.has(node)) {
+                visited.add(node);
+                
+                const connections = mapData.paths
+                    .filter(p => p.from === node || p.to === node)
+                    .map(p => p.from === node ? p.to : p.from);
+                
+                for (const neighbor of connections) {
+                    const newPath = [...path, neighbor];
+                    queue.push(newPath);
+                }
+            }
+        }
+        
+        return []; // لا يوجد مسار
+    }
+
+    // عرض الإرشادات
+    function loadGuides() {
+        const guidesContainer = document.getElementById('guides-list');
+        
+        mapData.regions.forEach(region => {
+            const guideCard = document.createElement('div');
+            guideCard.className = 'guide-card';
+            guideCard.innerHTML = `
+                <h3>${region.name}</h3>
+                <p>هذه المنطقة تحتوي على:</p>
+                <ul>
+                    ${mapData.bosses.filter(b => b.regionId === region.id).map(b => `<li>زعيم: ${b.name}</li>`).join('')}
+                    ${mapData.items.filter(i => i.regionId === region.id).map(i => `<li>عنصر: ${i.name}</li>`).join('')}
+                    ${mapData.npcs.filter(n => n.regionId === region.id).map(n => `<li>شخصية: ${n.name}</li>`).join('')}
+                </ul>
+                <button class="show-on-map" data-region-id="${region.id}">عرض على الخريطة</button>
+            `;
+            
+            guidesContainer.appendChild(guideCard);
+        });
+        
+        // إضافة أحداث لعرض المناطق على الخريطة
+        document.querySelectorAll('.show-on-map').forEach(button => {
+            button.addEventListener('click', function() {
+                const regionId = parseInt(this.getAttribute('data-region-id'));
+                const region = mapData.regions.find(r => r.id === regionId);
+                
+                // يمكن تطوير هذه الوظيفة لتكبير الخريطة على المنطقة المحددة
+                alert(`سيتم عرض منطقة ${region.name} على الخريطة`);
+            });
+        });
+    }
+    
+    loadGuides();
+});

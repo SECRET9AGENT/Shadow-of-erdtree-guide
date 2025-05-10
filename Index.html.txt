@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل Shadow of Erdtree - خرائط وإرشادات</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>دليل Shadow of Erdtree</h1>
+        <nav>
+            <ul>
+                <li><a href="#maps">الخرائط</a></li>
+                <li><a href="#guides">الإرشادات</a></li>
+                <li><a href="#builds">البناءات</a></li>
+                <li><a href="#search">بحث</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="interactive-map">
+            <h2>الخريطة التفاعلية</h2>
+            <div class="map-container">
+                <img src="erdtree-map.jpg" alt="خريطة Shadow of Erdtree" id="main-map">
+                <div class="markers-container" id="markers"></div>
+            </div>
+            <div class="map-controls">
+                <button id="show-bosses">عرض الزعماء</button>
+                <button id="show-items">عرض العناصر</button>
+                <button id="show-npcs">عرض الشخصيات</button>
+                <button id="show-all">عرض الكل</button>
+                <button id="hide-all">إخفاء الكل</button>
+            </div>
+        </section>
+
+        <section id="path-finder">
+            <h2>مجدول المسارات</h2>
+            <div class="path-finder-container">
+                <select id="start-point">
+                    <option value="">اختر نقطة البداية</option>
+                    <!-- سيتم ملؤها بالسكريبت -->
+                </select>
+                <select id="end-point">
+                    <option value="">اختر نقطة النهاية</option>
+                    <!-- سيتم ملؤها بالسكريبت -->
+                </select>
+                <button id="find-path">إيجاد المسار</button>
+                <div id="path-result"></div>
+            </div>
+        </section>
+
+        <section id="guides">
+            <h2>إرشادات حسب المنطقة</h2>
+            <div class="guides-container" id="guides-list">
+                <!-- سيتم ملؤها بالسكريبت -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2023 دليل Shadow of Erdtree. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
